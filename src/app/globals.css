@@ -1,0 +1,46 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --color-crema: #F5E6D3;
+    --color-bronce: #7A5A32;
+    --color-gris: #8C8880;
+    --color-negro: #111111;
+  }
+
+  .safe-bottom {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+}
+
+html {
+  height: 100%;
+  overscroll-behavior: none;
+}
+
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  color: var(--color-negro);
+  background: var(--color-crema);
+
+  height: 100%;
+  position: fixed;
+  width: 100%;
+  overflow: hidden;
+
+  /*
+   * Prevent pull-to-refresh (overscroll-y) and edge-swipe back/forward
+   * (overscroll-x) from triggering on the page root.
+   *
+   * 'contain' lets inner scrollable containers (overflow-y: auto) still scroll
+   * normally — only the "bounce" that propagates past the last pixel of scroll
+   * is blocked, which is what triggers refresh on Android Chrome.
+   *
+   * Note: overscroll-behavior is NOT supported on iOS Safari < 16. On those
+   * devices the native iOS swipe-back gesture (from the left edge) can still
+   * trigger browser navigation. That's best handled at the OS level via
+   * Settings → Accessibility → Guided Access rather than in CSS.
+   */
+  overscroll-behavior-y: contain;
+  overscroll-behavior-x: none;
+}
