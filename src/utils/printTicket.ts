@@ -195,7 +195,7 @@ async function sendAndroidPrintJob(bytes: Uint8Array, timeoutMs = ANDROID_PRINT_
       success: false,
       channel: 'android_usb',
       errorCode: 'ANDROID_BRIDGE_UNAVAILABLE',
-      message: 'Esta opción requiere abrir Cristi\\'s POS desde la APK Android.',
+      message: "Esta opción requiere abrir Cristi's POS desde la APK Android.",
     }
   }
 
@@ -324,7 +324,7 @@ async function sendAndroidBluetoothPrintJob(bytes: Uint8Array, timeoutMs = ANDRO
       success: false,
       channel: 'android_bluetooth',
       errorCode: 'ANDROID_BT_BRIDGE_UNAVAILABLE',
-      message: 'Esta opción requiere abrir Cristi\\'s POS desde la APK Android.',
+      message: "Esta opción requiere abrir Cristi's POS desde la APK Android.",
     }
   }
 
@@ -612,7 +612,7 @@ export async function imprimirTicket(orderData: PrintOrderData, settings: Printe
       success: false,
       channel: 'android_usb',
       errorCode: 'ANDROID_MODE_NOT_SELECTED',
-      message: 'Selecciona “USB Android — APK Cristi\\'s POS” en Configuración.',
+      message: "Selecciona “USB Android — APK Cristi's POS” en Configuración.",
     }
   }
 
