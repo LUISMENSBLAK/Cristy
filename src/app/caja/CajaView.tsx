@@ -16,7 +16,7 @@ import { formatOrderType, getOrderTypeColorClass } from '@/lib/utils'
 import { groupOrderItems, GroupedOrderItem, calcTotal } from '@/lib/orderUtils'
 import { useWakeLock } from '@/hooks/useWakeLock'
 import { useDebouncedCallback } from '@/hooks/useDebouncedCallback'
-import { ChevronDown, ChevronUp } from 'lucide-react'
+import { ChevronDown, ChevronUp, Lock, Unlock } from 'lucide-react'
 import {
   enqueuePendingPayment,
   getPendingPayments,
@@ -466,6 +466,18 @@ export default function CajaView({ initialOrders, products, extras, ingredients,
       await imprimirTicketCocina(printData, settings)
     } catch (e) {
       console.error('Error imprimiendo en cocina:', e)
+    }
+  }
+
+  const toggleCajaApertura = async () => {
+    const newVal = !(settings?.caja_apertura_automatica ?? true)
+    setSettings((prev: any) => ({ ...prev, caja_apertura_automatica: newVal }))
+    const { error } = await supabase.from('settings').update({ caja_apertura_automatica: newVal }).eq('id', 1)
+    if (error) {
+      pushToast('Error al actualizar ajuste de cajón', 'info')
+      setSettings((prev: any) => ({ ...prev, caja_apertura_automatica: !newVal }))
+    } else {
+      pushToast(newVal ? 'Apertura automática activada' : 'Apertura automática desactivada', 'success')
     }
   }
 
@@ -1389,6 +1401,25 @@ export default function CajaView({ initialOrders, products, extras, ingredients,
                 </div>
               </div>
             )}
+
+            <div className="flex items-center justify-between mt-2">
+              <button
+                className="flex items-center gap-1.5 text-xs text-[var(--color-gris)] hover:text-[var(--color-bronce)] bg-[var(--color-crema)] px-3 py-2 rounded border border-[var(--color-gris)]/20 transition-colors"
+                onClick={toggleCajaApertura}
+                title="Alternar apertura automática del cajón de dinero"
+              >
+                {settings?.caja_apertura_automatica ?? true ? (
+                  <><Unlock size={14} className="text-green-600" /> <span className="font-semibold text-[var(--color-negro)]">Cajón: abre al cobrar</span></>
+                ) : (
+                  <><Lock size={14} className="text-orange-600" /> <span className="font-semibold text-[var(--color-negro)]">Cajón: no abre</span></>
+                )}
+              </button>
+              {settings?.impresora_modo === 'red' && (
+                <div className="text-[10px] text-orange-600 max-w-[220px] text-right leading-tight">
+                  El cajón no puede abrirse automáticamente con impresión por red. Requiere USB (QZ Tray) o app Android.
+                </div>
+              )}
+            </div>
 
             <Button
               size="lg"

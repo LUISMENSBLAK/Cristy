@@ -89,7 +89,7 @@ export function AndroidBluetoothPrinterPanel() {
       type: granted ? 'success' : 'error',
       message: granted
         ? 'Permiso Bluetooth disponible. Ya puedes imprimir.'
-        : 'Falta el permiso BLUETOOTH_CONNECT. Otórgalo en Configuración → Aplicaciones → Cristi\\'s POS → Permisos.',
+        : "Falta el permiso BLUETOOTH_CONNECT. Otórgalo en Configuración → Aplicaciones → Cristi's POS → Permisos.",
     })
   }
 

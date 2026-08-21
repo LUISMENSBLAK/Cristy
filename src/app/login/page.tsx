@@ -118,7 +118,7 @@ export default function LoginPage() {
                 <label className="block text-xs font-bold tracking-widest text-[var(--color-gris)] uppercase mb-2">
                   Correo
                 </label>
-                <Input name="email" type="email" placeholder="admin@abaroa.local" required disabled={isPending} />
+                <Input name="email" type="email" placeholder="admin@cristiscoffe.local" required disabled={isPending} />
               </div>
               <div>
                 <label className="block text-xs font-bold tracking-widest text-[var(--color-gris)] uppercase mb-2">

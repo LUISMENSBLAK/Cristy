@@ -18,6 +18,7 @@ import {
   LayoutDashboard, Coffee, Users, Table2, ArrowRightLeft,
   Plus, Edit, Trash2, CheckCircle2, XCircle, ChevronLeft, ChevronRight, FileSpreadsheet, FileText, Download, RefreshCw, X, Loader2, MoreHorizontal
 } from 'lucide-react'
+import GeneralInventoryAdmin from '@/components/GeneralInventoryAdmin'
 import dynamic from 'next/dynamic'
 import Image from 'next/image'
 
@@ -49,6 +50,7 @@ const formatOrderType = (t: string) => {
 
 export default function AdminView({ employeeId }: { employeeId: string }) {
   const [activeTab, setActiveTab] = useState('dashboard')
+  const [productSubTab, setProductSubTab] = useState<'catalogo'|'inventario'>('catalogo')
   const supabase = useRef(createClient()).current
   const [currentUser, setCurrentUser] = useState<string | null>(null)
   
@@ -782,9 +784,15 @@ export default function AdminView({ employeeId }: { employeeId: string }) {
     doc.setFontSize(10)
     
     let y = 10
-    doc.text("ABAROA", 40, y, { align: 'center' }); y += 5;
-    doc.setFontSize(8)
-    doc.text("CAFETERIA", 40, y, { align: 'center' }); y += 10;
+    doc.text(settings?.negocio_nombre || "Cristi's Coffe & Snack", 40, y, { align: 'center' }); y += 5;
+    doc.setFontSize(8);
+    if (settings?.negocio_direccion) {
+      doc.text(settings.negocio_direccion, 40, y, { align: 'center' }); y += 4;
+    }
+    if (settings?.negocio_telefono) {
+      doc.text(`Tel: ${settings.negocio_telefono}`, 40, y, { align: 'center' }); y += 4;
+    }
+    y += 6;
     
     doc.setFontSize(10)
     doc.text(`Ticket: #${payment.order_id?.substring(0,8).toUpperCase()}`, 5, y); y += 5;
@@ -816,7 +824,13 @@ export default function AdminView({ employeeId }: { employeeId: string }) {
     doc.text(`Total: $${payment.monto_cobrado.toFixed(2)}`, 75, y, { align: 'right' }); y += 5;
     doc.text(`Pagado con: ${payment.metodo?.toUpperCase()}`, 75, y, { align: 'right' }); y += 10;
     
-    doc.text("Gracias por su compra!", 40, y, { align: 'center' });
+    if (settings?.ticket_linea_extra) {
+      doc.setFontSize(8);
+      doc.text(settings.ticket_linea_extra, 40, y, { align: 'center' }); y += 5;
+      doc.setFontSize(10);
+    }
+    const farewell = settings?.ticket_mensaje_despedida || "¡Gracias por su compra!";
+    doc.text(farewell, 40, y, { align: 'center' });
     
     doc.save(`Ticket_${payment.order_id?.substring(0,8).toUpperCase()}.pdf`)
   }
@@ -2013,6 +2027,25 @@ export default function AdminView({ employeeId }: { employeeId: string }) {
         {/* PRODUCTOS */}
         {activeTab === 'productos' && (
           <div className="space-y-6">
+            {/* Sub-tabs: Catálogo / Inventario General */}
+            <div className="flex gap-2 border-b border-[var(--color-gris)]/20 pb-3">
+              <button
+                className={`px-4 py-2 rounded-lg text-sm font-bold transition-colors ${productSubTab === 'catalogo' ? 'bg-[var(--color-bronce)] text-white' : 'bg-[var(--color-crema)] text-[var(--color-gris)] hover:text-[var(--color-negro)]'}`}
+                onClick={() => setProductSubTab('catalogo')}
+              >
+                Catálogo
+              </button>
+              <button
+                className={`px-4 py-2 rounded-lg text-sm font-bold transition-colors ${productSubTab === 'inventario' ? 'bg-[var(--color-bronce)] text-white' : 'bg-[var(--color-crema)] text-[var(--color-gris)] hover:text-[var(--color-negro)]'}`}
+                onClick={() => setProductSubTab('inventario')}
+              >
+                📦 Inventario General
+              </button>
+            </div>
+
+            {productSubTab === 'inventario' && <GeneralInventoryAdmin />}
+
+            {productSubTab === 'catalogo' && <>
             <div className="flex flex-col gap-3 md:flex-row md:justify-between md:items-center md:flex-wrap md:gap-2">
               <h2 className="font-serif font-bold text-2xl text-[var(--color-bronce)]">Catálogo de Productos</h2>
               <div className="flex gap-2">
@@ -2094,9 +2127,9 @@ export default function AdminView({ employeeId }: { employeeId: string }) {
                 </div>
               ))}
             </div>
+          </>}
           </div>
         )}
-
         {/* EMPLEADOS */}
         {activeTab === 'empleados' && (
           <div className="space-y-6">
@@ -2308,7 +2341,25 @@ export default function AdminView({ employeeId }: { employeeId: string }) {
                           return (
                             <tr key={p.id} className={`border-b border-[var(--color-gris)]/10 hover:bg-gray-50 ${p.anulado ? 'opacity-50 bg-red-50' : ''}`}>
                               <td className="px-4 py-3">{time}</td>
-                              <td className="px-4 py-3 font-medium capitalize">{p.metodo}</td>
+                              <td className="px-4 py-3 font-medium capitalize">
+                                {!p.anulado && new Date(p.creado_en).toDateString() === new Date().toDateString() ? (
+                                  <span className="inline-flex items-center gap-1">
+                                    {p.metodo}
+                                    <button
+                                      className="text-[10px] text-[var(--color-bronce)] underline ml-1"
+                                      onClick={() => {
+                                        const nuevoMetodo = p.metodo === 'efectivo' ? 'tarjeta' : 'efectivo'
+                                        if (confirm(`¿Cambiar método de pago de \${p.metodo} → \${nuevoMetodo}?`)) {
+                                          supabase.rpc('editar_metodo_pago', { p_payment_id: p.id, p_nuevo_metodo: nuevoMetodo, p_employee_id: employeeId })
+                                            .then(({ error }: any) => { if (error) alert(error.message); else loadData() })
+                                        }
+                                      }}
+                                    >
+                                      cambiar
+                                    </button>
+                                  </span>
+                                ) : p.metodo}
+                              </td>
                               <td className="px-4 py-3 font-bold">
                                 {p.anulado ? (
                                   <span className="line-through text-gray-500">${p.monto_cobrado.toFixed(2)}</span>
@@ -2320,20 +2371,24 @@ export default function AdminView({ employeeId }: { employeeId: string }) {
                                 {p.anulado ? (
                                   <div className="flex flex-col items-end gap-1">
                                     <span className="text-xs font-bold text-red-600">Anulado: {p.motivo_anulacion}</span>
-                                    <button
-                                      className="text-[10px] font-bold text-[var(--color-bronce)] underline"
-                                      onClick={() => {
-                                        if (confirm('¿Desanular este pago? Se volverá a marcar como cobrado.')) {
-                                          supabase.rpc('desanular_pago', { p_payment_id: p.id, p_employee_id: employeeId })
-                                            .then(({ error }: any) => {
-                                              if (error) alert(error.message)
-                                              else loadData()
-                                            })
-                                        }
-                                      }}
-                                    >
-                                      Desanular
-                                    </button>
+                                    {new Date(p.creado_en).toDateString() === new Date().toDateString() ? (
+                                      <button
+                                        className="text-[10px] font-bold text-[var(--color-bronce)] underline"
+                                        onClick={() => {
+                                          if (confirm('¿Desanular este pago? Se volverá a marcar como cobrado.')) {
+                                            supabase.rpc('desanular_pago', { p_payment_id: p.id, p_employee_id: employeeId })
+                                              .then(({ error }: any) => {
+                                                if (error) alert(error.message)
+                                                else loadData()
+                                              })
+                                          }
+                                        }}
+                                      >
+                                        Deshacer anulación
+                                      </button>
+                                    ) : (
+                                      <span className="text-[10px] text-[var(--color-gris)] italic">Solo hoy</span>
+                                    )}
                                   </div>
                                 ) : (
                                   <Button 

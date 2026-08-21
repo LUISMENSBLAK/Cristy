@@ -442,7 +442,7 @@ export function POSMenu({
                       ? <Image src={p.foto_url} alt={p.nombre} fill sizes="(max-width: 768px) 50vw, 180px" className="object-cover" loading="lazy" />
                       : <span className="text-3xl opacity-40">☕</span>}
                   </div>
-                  <div className="font-serif font-bold mt-auto leading-tight mb-1 text-[var(--color-negro)] text-lg">{p.nombre}</div>
+                  <div className="font-serif font-bold mt-auto leading-tight mb-1 text-[var(--color-negro)] text-lg line-clamp-2" title={p.nombre}>{p.nombre}</div>
                   <div className="text-[var(--color-bronce)] font-semibold text-base">${p.precio}</div>
                   {p.maneja_inventario && !agotado && (
                     <div className="text-[10px] text-[var(--color-gris)] mt-0.5">📦 {p.stock_actual}
@@ -810,8 +810,8 @@ export function POSMenu({
               </div>
             )}
 
-            <Button className="w-full h-14 text-lg sticky bottom-0 safe-bottom" onClick={handleConfirmOptions}>
-              Agregar al Pedido
+            <Button className="w-full h-14 text-lg sticky bottom-0 safe-bottom" onClick={handleConfirmOptions} disabled={variantesForProduct.length > 0 && !selectedVarianteId}>
+              {variantesForProduct.length > 0 && !selectedVarianteId ? "Elige una opción para continuar" : "Agregar al Pedido"}
             </Button>
           </div>
         )}

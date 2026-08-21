@@ -2,6 +2,7 @@ import { formatOrderType } from '@/lib/utils'
 import {
   ESC_POS_DOTS_58MM,
   buildDiagnosticEscPosBytes,
+  buildCashDrawerKickCommand,
   buildEscPosBytes,
   bytesToBase64,
   bytesToHex,
@@ -266,7 +267,11 @@ async function buildAndroidTicket(orderData: PrintOrderData, settings: PrinterSe
     }
   }
   const is58 = settings.impresora_papel_mm === '58'
-  return buildEscPosBytes(orderData, settings, { logoRaster, lineWidth: is58 ? 32 : 48 })
+  let ticketBytes = buildEscPosBytes(orderData, settings, { logoRaster, lineWidth: is58 ? 32 : 48 })
+  if (settings.caja_apertura_automatica && orderData.tipoTicket !== 'cuenta') {
+    ticketBytes = concatBytes(buildCashDrawerKickCommand(), ticketBytes)
+  }
+  return ticketBytes
 }
 
 export async function imprimirTicketDiagnosticoAndroid(): Promise<PrintResult> {
@@ -431,7 +436,10 @@ async function printWithQZ(orderData: PrintOrderData, settings: PrinterSettings)
     }
 
     const is58 = settings.impresora_papel_mm === '58'
-    const ticket = buildEscPosBytes(orderData, settings, { lineWidth: is58 ? 32 : 48 })
+    let ticket = buildEscPosBytes(orderData, settings, { lineWidth: is58 ? 32 : 48 })
+    if (settings.caja_apertura_automatica && orderData.tipoTicket !== 'cuenta') {
+      ticket = concatBytes(buildCashDrawerKickCommand(), ticket)
+    }
     await qz.print(config, [{ type: 'raw', format: 'hex', data: bytesToHex(ticket) }])
     console.log('[Print QZ] Ticket enviado a', printerName)
     return { success: true, channel: 'usb_qz', message: `Ticket enviado a ${printerName}.` }

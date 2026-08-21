@@ -1,5 +1,6 @@
 export interface EscPosOrderData {
   orderId: string
+  tipoTicket?: string
   items: {
     nombre: string
     cantidad: number
@@ -19,9 +20,11 @@ export interface EscPosOrderData {
   atendidoPor?: string
   montoRecibido?: number
   cambio?: number
+  mesa?: string | null
 }
 
 export interface EscPosTicketSettings {
+  caja_apertura_automatica?: boolean
   ticket_tamano_fuente?: 'pequena' | 'normal' | 'grande' | string
   ticket_mensaje_despedida?: string | null
   ticket_mostrar_atendido_por?: boolean | null
@@ -284,4 +287,8 @@ export function buildDiagnosticEscPosBytes(printerLabel = 'Impresora USB Android
     ticket_mensaje_despedida: 'Si este texto y el corte salen bien, la conexión ESC/POS funciona.',
     ticket_mostrar_logo: false,
   })
+}
+
+export function buildCashDrawerKickCommand(): Uint8Array {
+  return Uint8Array.from([0x1b, 0x70, 0x00, 0x19, 0xfa])
 }

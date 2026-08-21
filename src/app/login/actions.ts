@@ -34,9 +34,6 @@ export async function loginWithPin(pin: string) {
     return { error: 'PIN inválido o usuario inactivo' }
   }
 
-  if (employee.rol === 'admin') {
-    return { error: 'El administrador debe usar su correo y contraseña.' }
-  }
 
   // 2. The internal email is always deterministic: emp_${id}@abaroa.local
   //    We verify against auth to make sure the record exists.

@@ -23,7 +23,7 @@ async function seed() {
   console.log("Starting database seed...");
 
   // 1. Create Admin User in Supabase Auth
-  const adminEmail = 'admin@abaroa.local';
+  const adminEmail = 'admin@cristiscoffe.local';
   const adminPassword = 'admin123'; // You should change this after first login
 
   const { data: authData, error: authError } = await supabase.auth.admin.createUser({
