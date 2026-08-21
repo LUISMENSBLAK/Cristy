@@ -34,6 +34,8 @@ export default function GeneralInventoryAdmin() {
   const [enableStock, setEnableStock] = useState('0')
   const [enableMinimo, setEnableMinimo] = useState('5')
   const [enableCarton, setEnableCarton] = useState('1')
+  const [enableCajas, setEnableCajas] = useState('0')
+  const [enableSueltas, setEnableSueltas] = useState('0')
   const [enablingId, setEnablingId] = useState<string | null>(null)
 
   const loadProducts = useCallback(async () => {
@@ -85,13 +87,17 @@ export default function GeneralInventoryAdmin() {
   const handleEnableInventory = async () => {
     if (!enableModal) return
     setEnablingId(enableModal.product.id)
+    const cpc = Math.max(1, parseInt(enableCarton) || 1)
+    const stockTotal = cpc > 1
+      ? (parseInt(enableCajas) || 0) * cpc + (parseInt(enableSueltas) || 0)
+      : parseInt(enableStock) || 0
     const { error } = await supabase
       .from('products')
       .update({
         maneja_inventario: true,
-        stock_actual: parseInt(enableStock) || 0,
+        stock_actual: stockTotal,
         stock_minimo: parseInt(enableMinimo) || 5,
-        unidades_por_carton: Math.max(1, parseInt(enableCarton) || 1),
+        unidades_por_carton: cpc,
       })
       .eq('id', enableModal.product.id)
     setEnablingId(null)
@@ -206,6 +212,8 @@ export default function GeneralInventoryAdmin() {
                           setEnableStock('0')
                           setEnableMinimo('5')
                           setEnableCarton('1')
+                          setEnableCajas('0')
+                          setEnableSueltas('0')
                         }}
                       >
                         + Activar control
@@ -304,17 +312,70 @@ export default function GeneralInventoryAdmin() {
             <p className="text-[var(--color-bronce)] font-bold">{enableModal.product.nombre}</p>
 
             <div className="space-y-4">
+              {/* 1. Unidades por caja — siempre primero */}
               <div>
                 <label className="text-xs font-bold text-[var(--color-gris)] uppercase tracking-wider block mb-1">
-                  Stock inicial (unidades)
+                  Unidades por caja/cartón <span className="font-normal">(deja 1 si no aplica)</span>
                 </label>
                 <input
-                  type="number" min="0"
+                  type="number" min="1"
                   className="w-full h-11 px-3 rounded-lg border border-[var(--color-gris)]/30 focus:outline-none focus:ring-2 focus:ring-[var(--color-bronce)]"
-                  value={enableStock}
-                  onChange={e => setEnableStock(e.target.value)}
+                  value={enableCarton}
+                  onChange={e => { setEnableCarton(e.target.value); setEnableCajas('0'); setEnableSueltas('0'); setEnableStock('0') }}
                 />
               </div>
+
+              {/* 2a. Si unidades/caja > 1: campos de cajas + sueltas */}
+              {(parseInt(enableCarton) || 1) > 1 ? (
+                <>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-xs font-bold text-[var(--color-gris)] uppercase tracking-wider block mb-1">
+                        Cajas completas
+                      </label>
+                      <input
+                        type="number" min="0"
+                        className="w-full h-11 px-3 rounded-lg border border-[var(--color-gris)]/30 focus:outline-none focus:ring-2 focus:ring-[var(--color-bronce)]"
+                        value={enableCajas}
+                        onChange={e => setEnableCajas(e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs font-bold text-[var(--color-gris)] uppercase tracking-wider block mb-1">
+                        Unidades sueltas
+                      </label>
+                      <input
+                        type="number" min="0"
+                        className="w-full h-11 px-3 rounded-lg border border-[var(--color-gris)]/30 focus:outline-none focus:ring-2 focus:ring-[var(--color-bronce)]"
+                        value={enableSueltas}
+                        onChange={e => setEnableSueltas(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                  {((parseInt(enableCajas) || 0) > 0 || (parseInt(enableSueltas) || 0) > 0) && (
+                    <div className="bg-green-50 border border-green-200 rounded-lg px-3 py-2 text-sm text-green-700 font-bold">
+                      ✅ Se activará con <strong>
+                        {(parseInt(enableCajas) || 0) * (parseInt(enableCarton) || 1) + (parseInt(enableSueltas) || 0)}
+                      </strong> unidades en total
+                    </div>
+                  )}
+                </>
+              ) : (
+                /* 2b. Sin empaque por caja: solo un campo simple */
+                <div>
+                  <label className="text-xs font-bold text-[var(--color-gris)] uppercase tracking-wider block mb-1">
+                    Stock inicial (unidades)
+                  </label>
+                  <input
+                    type="number" min="0"
+                    className="w-full h-11 px-3 rounded-lg border border-[var(--color-gris)]/30 focus:outline-none focus:ring-2 focus:ring-[var(--color-bronce)]"
+                    value={enableStock}
+                    onChange={e => setEnableStock(e.target.value)}
+                  />
+                </div>
+              )}
+
+              {/* 3. Stock mínimo — siempre */}
               <div>
                 <label className="text-xs font-bold text-[var(--color-gris)] uppercase tracking-wider block mb-1">
                   Stock mínimo (alerta)
@@ -324,17 +385,6 @@ export default function GeneralInventoryAdmin() {
                   className="w-full h-11 px-3 rounded-lg border border-[var(--color-gris)]/30 focus:outline-none focus:ring-2 focus:ring-[var(--color-bronce)]"
                   value={enableMinimo}
                   onChange={e => setEnableMinimo(e.target.value)}
-                />
-              </div>
-              <div>
-                <label className="text-xs font-bold text-[var(--color-gris)] uppercase tracking-wider block mb-1">
-                  Unidades por caja/cartón <span className="font-normal">(deja 1 si no aplica)</span>
-                </label>
-                <input
-                  type="number" min="1"
-                  className="w-full h-11 px-3 rounded-lg border border-[var(--color-gris)]/30 focus:outline-none focus:ring-2 focus:ring-[var(--color-bronce)]"
-                  value={enableCarton}
-                  onChange={e => setEnableCarton(e.target.value)}
                 />
               </div>
             </div>
