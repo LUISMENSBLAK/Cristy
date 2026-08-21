@@ -1,5 +1,7 @@
 const { Client } = require('pg');
-const DB_URL = 'process.env.SUPABASE_DB_URL';
+require('dotenv').config({ path: '.env.local' });
+const DB_URL = process.env.SUPABASE_DB_URL;
+if (!DB_URL) throw new Error('Falta SUPABASE_DB_URL en las variables de entorno');
 
 function variantExtras(opciones) {
   return opciones.map(o => ({ nombre: o, precio_adicional: 0, es_variante_unica: true }));
