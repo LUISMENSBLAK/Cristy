@@ -50,10 +50,10 @@ export default async function MeseroPage() {
     .eq('activo', true)
 
   // Fetch tables
-  const { data: tables } = await supabase
+  const { data: _tables } = await supabase
     .from('tables')
     .select('*')
-    .order('numero')
+  const tables = (_tables || []).sort((a, b) => a.numero.localeCompare(b.numero, undefined, { numeric: true }))
 
   // Fetch categories
   const { data: categories } = await supabase

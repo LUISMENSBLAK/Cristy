@@ -265,7 +265,7 @@ export default function AdminView({ employeeId }: { employeeId: string }) {
     if (mRes.error) { console.error('[Dashboard] Error cargando movements:', mRes.error); setLoadError(mRes.error.message); }
 
     if (pRes.data) setProducts(pRes.data)
-    if (tRes.data) setTables(tRes.data)
+    if (tRes.data) setTables([...tRes.data].sort((a: any, b: any) => a.numero.localeCompare(b.numero, undefined, {numeric: true})))
     if (eRes.data) setEmployees(eRes.data)
     if (mRes.data) setMovements(mRes.data)
     if (sRes.data) {

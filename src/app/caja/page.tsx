@@ -66,7 +66,7 @@ export default async function CajaPage() {
           products={productsRes.data || []}
           extras={extrasRes.data || []}
           ingredients={ingRes.data || []}
-          tables={tablesRes.data || []}
+          tables={(tablesRes.data || []).sort((a,b) => a.numero.localeCompare(b.numero, undefined, {numeric: true}))}
           employeeId={employee.id}
           employeeName={employee.nombre}
           employeeRol={employee.rol}
