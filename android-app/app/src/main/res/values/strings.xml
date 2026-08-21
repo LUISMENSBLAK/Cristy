@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Cristi\'s POS</string>
+    <string name="loading_pos">Cargando Cristi\'s POS…</string>
+    <string name="load_error_title">No se pudo abrir el punto de venta</string>
+    <string name="load_error_message">Comprueba la conexión a internet y vuelve a intentarlo.</string>
+    <string name="retry">Reintentar</string>
+</resources>

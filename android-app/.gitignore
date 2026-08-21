@@ -1,0 +1,21 @@
+# Android build outputs
+*.apk
+*.aab
+*.ap_
+build/
+.gradle/
+local.properties
+
+# Keystore — NUNCA commitear
+*.jks
+*.keystore
+keystore.properties
+
+# IDE
+.idea/
+*.iml
+.DS_Store
+
+# Gradle wrapper cache
+!gradle/wrapper/gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.properties
